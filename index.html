@@ -99,6 +99,9 @@
             const music = document.getElementById("music");
             music.play();
             alert("🎉  HBD W6ul l3mer w6lu3 darj wmurad hlek vik nchalla 🤍🤍 🎉");
+
+            // Lancer l'effet d'explosion de ballons
+            createBalloonExplosion();
         }
 
         // --- Effets visuels ---
@@ -149,6 +152,56 @@
             requestAnimationFrame(animate);
         }
 
+        // Effet explosion de ballons
+        function createBalloonExplosion() {
+            for (let i = 0; i < 10; i++) {
+                let balloon = {
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    radius: 30 + Math.random() * 20,
+                    speedX: Math.random() * 6 - 3,
+                    speedY: Math.random() * 6 - 3,
+                    color: `hsl(${Math.random() * 360}, 100%, 60%)`,
+                    explode: false
+                };
+
+                let balloonParticles = [];
+                function explodeBalloon() {
+                    if (!balloon.explode) {
+                        for (let j = 0; j < 100; j++) {
+                            balloonParticles.push({
+                                x: balloon.x,
+                                y: balloon.y,
+                                speedX: Math.random() * 6 - 3,
+                                speedY: Math.random() * 6 - 3,
+                                size: Math.random() * 3 + 1,
+                                color: balloon.color
+                            });
+                        }
+                        balloon.explode = true;
+                    }
+
+                    // Animer les particules du ballon explosé
+                    balloonParticles.forEach(p => {
+                        p.x += p.speedX;
+                        p.y += p.speedY;
+                        p.size *= 0.95;
+                    });
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    balloonParticles.forEach(p => {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color;
+                        ctx.fill();
+                    });
+                }
+
+                setTimeout(explodeBalloon, 500); // Attendre un moment avant d'exploser le ballon
+            }
+        }
+
+        // Démarrer les effets d'animation
         createParticles();
         animate();
     </script>
