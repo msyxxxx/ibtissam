@@ -3,47 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joyeux Anniversaire Ibtissam 🎉</title>
+    <title>رسالة شكر 💌</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
             background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-            font-family: Arial, sans-serif;
+            font-family: "Cursive", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             text-align: center;
             color: #fff;
         }
 
-        h1 {
-            font-size: 3rem;
-            margin: 20px 0;
+        #envelope {
+            position: relative;
+            width: 400px;
+            height: 250px;
+            perspective: 1000px;
         }
 
-        p {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
+        .envelope-part {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border: 2px solid #ff6f61;
+            transition: transform 1.5s ease-in-out;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        #countdown {
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 20px 0;
+        #top-flap {
+            top: 0;
+            height: 50%;
+            background: linear-gradient(135deg, #ff6f61, #ffa07a);
+            transform-origin: top;
+            z-index: 2;
         }
 
-        button {
-            background: #ff6f61;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
+        #bottom-flap {
+            top: 50%;
+            height: 50%;
+            background: linear-gradient(135deg, #fff, #ffebeb);
+            transform-origin: bottom;
+            z-index: 1;
         }
 
-        button:hover {
-            background: #ff4757;
+        #message-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: #fff;
+            border: 2px solid #ff6f61;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
+        }
+
+        #message-container p {
+            font-size: 1.4rem;
+            line-height: 1.8;
+            color: #ff6f61;
         }
 
         canvas {
@@ -58,53 +88,43 @@
     </style>
 </head>
 <body>
-    <h1>Joyeux Anniversaire Ibtissam 🎉</h1>
-    <h1> 👑 17/11  👑 </h1> 
-    <p>الوقت لاه اتم دافع لين الوقت ال خلگت فيه مكصورت لعمر </p>
-    <div id="countdown">00:00:00</div>
-    <button onclick="playMusic()"> 🎵</button>
-    <audio id="music" src="happy_birthday_song.mp3"></audio>
+    <div id="envelope">
+        <div id="top-flap" class="envelope-part"></div>
+        <div id="bottom-flap" class="envelope-part"></div>
+        <div id="message-container">
+            <p>
+             Eyw giftatkm 🙂🫴🏻
+            </p>
+        </div>
+    </div>
+    <audio id="music" src="happy_birthday_song.mp3" loop autoplay></audio>
     <canvas id="canvas"></canvas>
 
     <script>
-        // --- Compteur de temps ---
-        function startCountdown() {
-            const targetTime = new Date();
-            targetTime.setHours(24, 0, 0, 0); // Minuit
+        // --- فتح الظرف ---
+        function openEnvelope() {
+            const topFlap = document.getElementById("top-flap");
+            const bottomFlap = document.getElementById("bottom-flap");
+            const messageContainer = document.getElementById("message-container");
 
-            function updateCountdown() {
-                const now = new Date();
-                const remainingTime = targetTime - now;
-
-                if (remainingTime > 0) {
-                    const hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
-                    const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
-                    const seconds = Math.floor((remainingTime / 1000) % 60);
-
-                    document.getElementById("countdown").textContent =
-                        `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-                } else {
-                    document.getElementById("countdown").textContent = "C'est l'heure ! 🎉";
-                }
-            }
-
-            updateCountdown();
-            setInterval(updateCountdown, 1000);
+            topFlap.style.transform = "rotateX(180deg)";
+            bottomFlap.style.transform = "rotateX(-180deg)";
+            setTimeout(() => {
+                messageContainer.style.opacity = "1";
+                messageContainer.style.transform = "scale(1)";
+            }, 1500); // يظهر النص بعد فتح الظرف
         }
 
-        startCountdown();
+        // --- تشغيل الموسيقى تلقائيًا ---
+        const music = document.getElementById("music");
+        music.play();
 
-        // --- Jouer de la musique ---
-        function playMusic() {
-            const music = document.getElementById("music");
-            music.play();
-            alert("🎉  HBD W6ul l3mer w6lu3 darj wmurad hlek vik nchalla 🤍🤍 🎉");
+        // --- تأثيرات عند تحميل الصفحة ---
+        window.onload = () => {
+            openEnvelope();
+        };
 
-            // Lancer l'effet d'explosion de ballons
-            createBalloonExplosion();
-        }
-
-        // --- Effets visuels ---
+        // --- تأثيرات بصرية ---
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
         canvas.width = window.innerWidth;
@@ -152,56 +172,6 @@
             requestAnimationFrame(animate);
         }
 
-        // Effet explosion de ballons
-        function createBalloonExplosion() {
-            for (let i = 0; i < 10; i++) {
-                let balloon = {
-                    x: canvas.width / 2,
-                    y: canvas.height / 2,
-                    radius: 30 + Math.random() * 20,
-                    speedX: Math.random() * 6 - 3,
-                    speedY: Math.random() * 6 - 3,
-                    color: `hsl(${Math.random() * 360}, 100%, 60%)`,
-                    explode: false
-                };
-
-                let balloonParticles = [];
-                function explodeBalloon() {
-                    if (!balloon.explode) {
-                        for (let j = 0; j < 100; j++) {
-                            balloonParticles.push({
-                                x: balloon.x,
-                                y: balloon.y,
-                                speedX: Math.random() * 6 - 3,
-                                speedY: Math.random() * 6 - 3,
-                                size: Math.random() * 3 + 1,
-                                color: balloon.color
-                            });
-                        }
-                        balloon.explode = true;
-                    }
-
-                    // Animer les particules du ballon explosé
-                    balloonParticles.forEach(p => {
-                        p.x += p.speedX;
-                        p.y += p.speedY;
-                        p.size *= 0.95;
-                    });
-
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    balloonParticles.forEach(p => {
-                        ctx.beginPath();
-                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                        ctx.fillStyle = p.color;
-                        ctx.fill();
-                    });
-                }
-
-                setTimeout(explodeBalloon, 500); // Attendre un moment avant d'exploser le ballon
-            }
-        }
-
-        // Démarrer les effets d'animation
         createParticles();
         animate();
     </script>
