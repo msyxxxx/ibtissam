@@ -1,139 +1,36 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>البحث عن المجموعة</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: #f4f4f9;
-            margin: 0;
-            padding: 0;
-        }
-
-        h1 {
-            margin-top: 20px;
-            color: #333;
-        }
-
-        input[type="file"] {
-            margin: 20px 0;
-        }
-
-        button {
-            padding: 10px 20px;
-            background: #4CAF50;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #45a049;
-        }
-
-        #progress-container {
-            width: 50%;
-            margin: 20px auto;
-            background: #ddd;
-            border-radius: 25px;
-            overflow: hidden;
-            display: none;
-        }
-
-        #progress-bar {
-            height: 20px;
-            width: 0%;
-            background: #4CAF50;
-            transition: width 0.2s ease;
-        }
-
-        #result {
-            margin-top: 20px;
-            color: #555;
-            font-size: 1.2rem;
-        }
-    </style>
+    <title>نموذج حل المسائل</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
-    <h1>البحث عن المجموعة</h1>
-    <input type="file" id="fileInput" accept=".png, .jpg, .jpeg, .pdf">
-    <button onclick="processFile()">تحميل ومعالجة</button>
-
-    <!-- شريط التقدم -->
-    <div id="progress-container">
-        <div id="progress-bar"></div>
+    <div class="container">
+        <h1>نموذج حل وتصحيح المسائل</h1>
+        <p>اختر التخصص وأدخل المسألة للحصول على الحل مع الشرح.</p>
+        
+        <div class="form-section">
+            <label for="subject">التخصص:</label>
+            <select id="subject">
+                <option value="math">الرياضيات</option>
+                <option value="accounting">المحاسبة</option>
+            </select>
+            
+            <label for="problem">المسألة:</label>
+            <textarea id="problem" placeholder="أدخل المسألة هنا..."></textarea>
+            
+            <button id="solve-btn">احصل على الحل</button>
+        </div>
+        
+        <div class="output-section">
+            <h2>الحل:</h2>
+            <div id="solution"></div>
+        </div>
     </div>
-
-    <!-- النتيجة -->
-    <div id="result">الرجاء اختيار ملف للبدء</div>
-
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <script>
-        async function processFile() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            const resultDiv = document.getElementById('result');
-            const progressBar = document.getElementById('progress-bar');
-            const progressContainer = document.getElementById('progress-container');
-
-            if (!file) {
-                resultDiv.textContent = "يرجى اختيار ملف!";
-                return;
-            }
-
-            resultDiv.textContent = "جاري المعالجة...";
-            progressBar.style.width = "0%";
-            progressContainer.style.display = "block";
-
-            if (file.type === "application/pdf") {
-                // معالجة ملفات PDF
-                const reader = new FileReader();
-                reader.onload = async function () {
-                    const pdfData = new Uint8Array(reader.result);
-                    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
-                    let extractedText = "";
-
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const textContent = await page.getTextContent();
-                        textContent.items.forEach((item) => {
-                            extractedText += item.str + " ";
-                        });
-
-                        // تحديث شريط التقدم لكل صفحة
-                        const progress = Math.round((i / pdf.numPages) * 100);
-                        progressBar.style.width = progress + "%";
-                    }
-
-                    resultDiv.textContent = "النص المستخرج: " + extractedText.trim();
-                };
-                reader.readAsArrayBuffer(file);
-            } else if (file.type.startsWith("image/")) {
-                // معالجة الصور باستخدام Tesseract.js
-                Tesseract.recognize(file, 'ara', {
-                    logger: (m) => {
-                        if (m.status === 'recognizing text') {
-                            const progress = Math.round(m.progress * 100);
-                            progressBar.style.width = progress + "%";
-                        }
-                    },
-                })
-                .then(({ data: { text } }) => {
-                    resultDiv.textContent = "النص المستخرج: " + text.trim();
-                })
-                .catch((err) => {
-                    resultDiv.textContent = "حدث خطأ أثناء استخراج النصوص.";
-                    console.error(err);
-                });
-            } else {
-                resultDiv.textContent = "نوع الملف غير مدعوم. يرجى اختيار صورة أو ملف PDF.";
-            }
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
