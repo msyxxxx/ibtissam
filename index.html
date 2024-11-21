@@ -1,181 +1,139 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>رسالة شكر 💌</title>
+    <title>البحث عن المجموعة</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f4f4f9;
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-            font-family: "Cursive", Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+            color: #333;
+        }
+
+        input[type="file"] {
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #4CAF50;
             color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
-        #envelope {
-            position: relative;
-            width: 1000px;
-            height: 450px;
-            perspective: 1000px;
+        button:hover {
+            background: #45a049;
         }
 
-        .envelope-part {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: #fff;
-            border: 2px solid #ff6f61;
-            transition: transform 1.5s ease-in-out;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        #progress-container {
+            width: 50%;
+            margin: 20px auto;
+            background: #ddd;
+            border-radius: 25px;
+            overflow: hidden;
+            display: none;
         }
 
-        #top-flap {
-            top: 0;
-            height: 50%;
-            background: linear-gradient(135deg, #ff6f61, #ffa07a);
-            transform-origin: top;
-            z-index: 2;
+        #progress-bar {
+            height: 20px;
+            width: 0%;
+            background: #4CAF50;
+            transition: width 0.2s ease;
         }
 
-        #bottom-flap {
-            top: 50%;
-            height: 50%;
-            background: linear-gradient(135deg, #fff, #ffebeb);
-            transform-origin: bottom;
-            z-index: 1;
-        }
-
-        #message-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            background: #fff;
-            border: 2px solid #ff6f61;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            opacity: 0;
-            transform: scale(0.8);
-            transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
-        }
-
-        #message-container p {
-            font-size: 1.4rem;
-            line-height: 1.8;
-            color: #ff6f61;
-        }
-
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
+        #result {
+            margin-top: 20px;
+            color: #555;
+            font-size: 1.2rem;
         }
     </style>
 </head>
 <body>
-    <div id="envelope">
-        <div id="top-flap" class="envelope-part"></div>
-        <div id="bottom-flap" class="envelope-part"></div>
-        <div id="message-container">
-            <p>
-             it’s my birthday 🎉
-عام جديد من عمري أُعانقه اليوم، كبرت عاماً، وتجدّدت أمنياتي. عام آخر قد مضى، ومضت معه أشياء كثيرة منها ما هو صعب وأخرى جميل. عام مضى وخسرت فيه أشياء، وأناس أحببتهم كثيراً. وهأنا اليوم أستقبل وبكل تفاؤل عاماً جديداً.
-فيا ربي إني استودعتك نفسي وعمري وقلبي وأهلي وديني، يا رب اجعل لي من أقداري ما أتمنى وبارك لي في عامي الجديد. اللهم عاماً مختلفاً تتحقق فيه أمنياتي، وتمسح فيه خيباتي، وتغفر فيه ذنوبي وزلاتي، وتتضاعف فيه حسناتي. ❤️❤️❤️🎂
-            </p>
-        </div>
+    <h1>البحث عن المجموعة</h1>
+    <input type="file" id="fileInput" accept=".png, .jpg, .jpeg, .pdf">
+    <button onclick="processFile()">تحميل ومعالجة</button>
+
+    <!-- شريط التقدم -->
+    <div id="progress-container">
+        <div id="progress-bar"></div>
     </div>
-    <audio id="music" src="happy_birthday_song.mp3" loop autoplay></audio>
-    <canvas id="canvas"></canvas>
 
+    <!-- النتيجة -->
+    <div id="result">الرجاء اختيار ملف للبدء</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
-        // --- فتح الظرف ---
-        function openEnvelope() {
-            const topFlap = document.getElementById("top-flap");
-            const bottomFlap = document.getElementById("bottom-flap");
-            const messageContainer = document.getElementById("message-container");
+        async function processFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            const resultDiv = document.getElementById('result');
+            const progressBar = document.getElementById('progress-bar');
+            const progressContainer = document.getElementById('progress-container');
 
-            topFlap.style.transform = "rotateX(180deg)";
-            bottomFlap.style.transform = "rotateX(-180deg)";
-            setTimeout(() => {
-                messageContainer.style.opacity = "1";
-                messageContainer.style.transform = "scale(1)";
-            }, 1500); // يظهر النص بعد فتح الظرف
-        }
+            if (!file) {
+                resultDiv.textContent = "يرجى اختيار ملف!";
+                return;
+            }
 
-        // --- تشغيل الموسيقى تلقائيًا ---
-        const music = document.getElementById("music");
-        music.play();
+            resultDiv.textContent = "جاري المعالجة...";
+            progressBar.style.width = "0%";
+            progressContainer.style.display = "block";
 
-        // --- تأثيرات عند تحميل الصفحة ---
-        window.onload = () => {
-            openEnvelope();
-        };
+            if (file.type === "application/pdf") {
+                // معالجة ملفات PDF
+                const reader = new FileReader();
+                reader.onload = async function () {
+                    const pdfData = new Uint8Array(reader.result);
+                    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+                    let extractedText = "";
 
-        // --- تأثيرات بصرية ---
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        textContent.items.forEach((item) => {
+                            extractedText += item.str + " ";
+                        });
 
-        let particles = [];
+                        // تحديث شريط التقدم لكل صفحة
+                        const progress = Math.round((i / pdf.numPages) * 100);
+                        progressBar.style.width = progress + "%";
+                    }
 
-        function createParticles() {
-            for (let i = 0; i < 150; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 5 + 1,
-                    speedX: Math.random() * 2 - 1,
-                    speedY: Math.random() * 2 - 1,
-                    color: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.8)`
+                    resultDiv.textContent = "النص المستخرج: " + extractedText.trim();
+                };
+                reader.readAsArrayBuffer(file);
+            } else if (file.type.startsWith("image/")) {
+                // معالجة الصور باستخدام Tesseract.js
+                Tesseract.recognize(file, 'ara', {
+                    logger: (m) => {
+                        if (m.status === 'recognizing text') {
+                            const progress = Math.round(m.progress * 100);
+                            progressBar.style.width = progress + "%";
+                        }
+                    },
+                })
+                .then(({ data: { text } }) => {
+                    resultDiv.textContent = "النص المستخرج: " + text.trim();
+                })
+                .catch((err) => {
+                    resultDiv.textContent = "حدث خطأ أثناء استخراج النصوص.";
+                    console.error(err);
                 });
+            } else {
+                resultDiv.textContent = "نوع الملف غير مدعوم. يرجى اختيار صورة أو ملف PDF.";
             }
         }
-
-        function drawParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.fill();
-            });
-        }
-
-        function updateParticles() {
-            particles.forEach(p => {
-                p.x += p.speedX;
-                p.y += p.speedY;
-                if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) {
-                    p.x = Math.random() * canvas.width;
-                    p.y = Math.random() * canvas.height;
-                }
-            });
-        }
-
-        function animate() {
-            drawParticles();
-            updateParticles();
-            requestAnimationFrame(animate);
-        }
-
-        createParticles();
-        animate();
     </script>
 </body>
 </html>
