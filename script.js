@@ -1,81 +1,88 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const languageToggle = document.getElementById("language-toggle");
-    const fileSelection = document.getElementById("file-selection");
-    const searchInterface = document.getElementById("search-interface");
-    const searchInput = document.getElementById("search-input");
-    const searchButton = document.getElementById("search-button");
-    const resultBox = document.getElementById("result");
+document.getElementById('upload-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
 
-    let currentFile = null;
-    let data = [];
-    let language = "ar";
+    const fileInput = document.getElementById('pdf-file');
+    const summaryType = document.getElementById('summary-type').value;
 
-    // تغيير اللغة
-    languageToggle.addEventListener("click", () => {
-        language = language === "ar" ? "fr" : "ar";
-        updateLanguage();
-    });
-
-    function updateLanguage() {
-        if (language === "ar") {
-            document.title = "نموذج البحث في نتائج الباكالوريا";
-            languageToggle.textContent = "تغيير اللغة";
-            document.querySelector("h1").textContent = "اختر نوع الدورة";
-            document.getElementById("normal-session").textContent = "الباكالوريا الدورة العادية";
-            document.getElementById("complementary-session").textContent = "الباكالوريا الدورة التكميلية";
-            searchButton.textContent = "بحث";
-        } else {
-            document.title = "Recherche des résultats du baccalauréat";
-            languageToggle.textContent = "Changer la langue";
-            document.querySelector("h1").textContent = "Choisissez le type de session";
-            document.getElementById("normal-session").textContent = "Baccalauréat Session Normale";
-            document.getElementById("complementary-session").textContent = "Baccalauréat Session Complémentaire";
-            searchButton.textContent = "Rechercher";
-        }
+    if (!fileInput.files.length) {
+        alert('يرجى اختيار ملف PDF');
+        return;
     }
 
-    // اختيار الملف
-    document.getElementById("normal-session").addEventListener("click", () => {
-        loadData("xlsx1.xlsx");
-    });
-
-    document.getElementById("complementary-session").addEventListener("click", () => {
-        loadData("xlsx2.xlsx");
-    });
-
-    // تحميل الملف
-    function loadData(filename) {
-        currentFile = filename;
-        fetch(filename)
-            .then(response => response.arrayBuffer())
-            .then(dataBuffer => {
-                const workbook = XLSX.read(dataBuffer, { type: "array" });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                data = XLSX.utils.sheet_to_json(sheet);
-                fileSelection.classList.add("hidden");
-                searchInterface.classList.remove("hidden");
-            })
-            .catch(err => console.error("Error loading file:", err));
+    const file = fileInput.files[0];
+    if (file.type !== 'application/pdf') {
+        alert('يرجى اختيار ملف بصيغة PDF فقط.');
+        return;
     }
 
-    // البحث في البيانات
-    searchButton.addEventListener("click", () => {
-        const nodoss = searchInput.value.trim();
-        const result = data.find(row => row.NODOSS == nodoss);
-        
-        if (result) {
-            resultBox.innerHTML = `
-                <p>الاسم بالعربية: ${result.NOMPA}</p>
-                <p>الاسم بالفرنسية: ${result.NOMPL}</p>
-                <p>الرقم الوطني: ${result.NNI}</p>
-                <p>الشعبة: ${result.SERIE}</p>
-                <p>المعدل العام: ${result.Moybac}</p>
-                <p>المركز بالعربية: ${result.Centre_AR}</p>
-                <p>المركز بالفرنسية: ${result.Centre_FR}</p>
-                <p>الملاحظة: ${result.Decision}</p>
-            `;
-        } else {
-            resultBox.innerHTML = `<p>لم يتم العثور على نتائج.</p>`;
+    // قراءة ملف PDF باستخدام pdf.js
+    const reader = new FileReader();
+    reader.onload = async function () {
+        const pdfData = new Uint8Array(reader.result);
+
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+        let fullText = '';
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            textContent.items.forEach(item => {
+                fullText += item.str + ' ';
+            });
         }
-    });
+
+        // استدعاء نوع التلخيص المختار
+        if (summaryType === 'simple') {
+            summarizeSimple(fullText);
+        } else if (summaryType === 'advanced') {
+            summarizeAdvanced(fullText);
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
 });
+
+// التلخيص البسيط
+function summarizeSimple(text) {
+    const sentences = text.split('.').filter(sentence => sentence.trim().length > 0);
+    const summary = sentences.slice(0, 5); // استخراج أول 5 جمل
+
+    displaySummary(summary);
+}
+
+// التلخيص المتقدم باستخدام TF-IDF
+function summarizeAdvanced(text) {
+    const sentences = text.split('.').filter(sentence => sentence.trim().length > 0);
+    const tokenizer = new natural.WordTokenizer();
+    const tfidf = new natural.TfIdf();
+
+    sentences.forEach(sentence => tfidf.addDocument(tokenizer.tokenize(sentence)));
+
+    const scoredSentences = sentences.map((sentence, index) => ({
+        text: sentence,
+        score: tfidf.tfidfs(sentence, index)
+    }));
+
+    const sortedSentences = scoredSentences.sort((a, b) => b.score - a.score);
+    const summary = sortedSentences.slice(0, 5).map(item => item.text);
+
+    displaySummary(summary);
+}
+
+// عرض التلخيص على الشاشة
+function displaySummary(summary) {
+    document.getElementById('summary').innerText = summary.join('\n\n');
+    document.getElementById('summary-container').style.display = 'block';
+
+    // تحميل التلخيص
+    document.getElementById('download-summary').onclick = () => {
+        const blob = new Blob([summary.join('\n\n')], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'summary.txt';
+        link.click();
+    };
+}
