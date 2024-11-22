@@ -3,32 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نموذج حل المسائل</title>
+    <title>PDF Summarizer</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>نموذج حل وتصحيح المسائل</h1>
-        <p>اختر التخصص وأدخل المسألة للحصول على الحل مع الشرح.</p>
-        
-        <div class="form-section">
-            <label for="subject">التخصص:</label>
-            <select id="subject">
-                <option value="math">الرياضيات</option>
-                <option value="accounting">المحاسبة</option>
-            </select>
-            
-            <label for="problem">المسألة:</label>
-            <textarea id="problem" placeholder="أدخل المسألة هنا..."></textarea>
-            
-            <button id="solve-btn">احصل على الحل</button>
-        </div>
-        
-        <div class="output-section">
-            <h2>الحل:</h2>
-            <div id="solution"></div>
+        <h1>تلخيص ملفات PDF</h1>
+        <p>قم برفع ملف PDF لتحصل على تلخيص شامل وسريع.</p>
+        <form id="upload-form">
+            <input type="file" id="pdf-file" accept="application/pdf" required>
+            <button type="submit">تلخيص الملف</button>
+        </form>
+        <div id="summary-container" style="display: none;">
+            <h2>التلخيص:</h2>
+            <div id="summary"></div>
+            <button id="download-summary">تحميل التلخيص</button>
+            <form id="upload-form">
+    <input type="file" id="pdf-file" accept="application/pdf" required>
+    <label for="summary-type">اختر نوع التلخيص:</label>
+    <select id="summary-type">
+        <option value="simple">تلخيص سريع</option>
+        <option value="advanced">تلخيص متقدم</option>
+    </select>
+    <button type="submit">تلخيص الملف</button>
+</form>
         </div>
     </div>
     <script src="script.js"></script>
