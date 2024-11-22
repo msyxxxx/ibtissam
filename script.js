@@ -15,14 +15,11 @@ document.getElementById('upload-form').addEventListener('submit', async (event) 
         return;
     }
 
-    // قراءة ملف PDF باستخدام pdf.js
     const reader = new FileReader();
     reader.onload = async function () {
         const pdfData = new Uint8Array(reader.result);
 
         const pdfjsLib = window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
         const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
         let fullText = '';
 
@@ -34,12 +31,9 @@ document.getElementById('upload-form').addEventListener('submit', async (event) 
             });
         }
 
-        // استدعاء نوع التلخيص المختار
-        if (summaryType === 'simple') {
-            summarizeSimple(fullText);
-        } else if (summaryType === 'advanced') {
-            summarizeAdvanced(fullText);
-        }
+        // اختيار نوع التلخيص
+        let summary = summaryType === 'simple' ? summarizeSimple(fullText) : summarizeAdvanced(fullText);
+        displaySummary(summary);
     };
 
     reader.readAsArrayBuffer(file);
@@ -48,41 +42,39 @@ document.getElementById('upload-form').addEventListener('submit', async (event) 
 // التلخيص البسيط
 function summarizeSimple(text) {
     const sentences = text.split('.').filter(sentence => sentence.trim().length > 0);
-    const summary = sentences.slice(0, 5); // استخراج أول 5 جمل
-
-    displaySummary(summary);
+    return sentences.slice(0, 5).join('. ') + '.';
 }
 
-// التلخيص المتقدم باستخدام TF-IDF
+// التلخيص المتقدم
 function summarizeAdvanced(text) {
     const sentences = text.split('.').filter(sentence => sentence.trim().length > 0);
-    const tokenizer = new natural.WordTokenizer();
-    const tfidf = new natural.TfIdf();
-
-    sentences.forEach(sentence => tfidf.addDocument(tokenizer.tokenize(sentence)));
-
-    const scoredSentences = sentences.map((sentence, index) => ({
-        text: sentence,
-        score: tfidf.tfidfs(sentence, index)
+    const scores = sentences.map(sentence => ({
+        sentence,
+        score: sentence.split(' ').length
     }));
-
-    const sortedSentences = scoredSentences.sort((a, b) => b.score - a.score);
-    const summary = sortedSentences.slice(0, 5).map(item => item.text);
-
-    displaySummary(summary);
+    scores.sort((a, b) => b.score - a.score);
+    return scores.slice(0, 5).map(item => item.sentence).join('. ') + '.';
 }
 
-// عرض التلخيص على الشاشة
+// عرض التلخيص
 function displaySummary(summary) {
-    document.getElementById('summary').innerText = summary.join('\n\n');
-    document.getElementById('summary-container').style.display = 'block';
+    const summaryContainer = document.getElementById('summary-container');
+    const summaryText = document.getElementById('summary');
 
-    // تحميل التلخيص
+    summaryText.value = summary;
+    summaryContainer.style.display = 'block';
+
     document.getElementById('download-summary').onclick = () => {
-        const blob = new Blob([summary.join('\n\n')], { type: 'text/plain' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'summary.txt';
-        link.click();
+        const format = document.getElementById('file-format').value;
+        downloadSummary(summary, format);
     };
+}
+
+// تنزيل التلخيص
+function downloadSummary(summary, format) {
+    const blob = new Blob([summary], { type: format === 'txt' ? 'text/plain' : 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `summary.${format}`;
+    link.click();
 }
