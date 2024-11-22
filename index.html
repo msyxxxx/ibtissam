@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Summarizer</title>
+    <title>تلخيص ملفات PDF</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -158,6 +158,7 @@
                 const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
                 let fullText = '';
 
+                // Extract text from each page
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const textContent = await page.getTextContent();
