@@ -9,7 +9,9 @@
 <body>
     <div class="container">
         <h1>تلخيص ملفات PDF</h1>
-        <p>قم برفع ملف PDF لتحصل على تلخيص شامل وسريع.</p>
+        <p>ارفع ملف PDF، اختر نوع التلخيص، واحصل على ملخص جاهز.</p>
+
+        <!-- نموذج رفع الملف -->
         <form id="upload-form">
             <input type="file" id="pdf-file" accept="application/pdf" required>
             <label for="summary-type">اختر نوع التلخيص:</label>
@@ -19,12 +21,20 @@
             </select>
             <button type="submit">تلخيص الملف</button>
         </form>
+
+        <!-- عرض التلخيص -->
         <div id="summary-container" style="display: none;">
             <h2>التلخيص:</h2>
-            <div id="summary"></div>
-            <button id="download-summary">تحميل التلخيص</button>
+            <textarea id="summary" readonly></textarea>
+            <label for="file-format">تنزيل كملف:</label>
+            <select id="file-format">
+                <option value="txt">TXT</option>
+                <option value="pdf">PDF</option>
+            </select>
+            <button id="download-summary">تحميل</button>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
